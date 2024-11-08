@@ -27,82 +27,137 @@ void fit(id identificador,int endereco,int quantidade,char* heap){ // Colocar no
     }
 }
 
-areas_vazias* search_empty_memory(char* heap){ // Vasculhando no heap pra achar espaço livre
-    areas_vazias* aux =NULL;
-    areas_vazias* lista_retornada=NULL;
-    int i = 0;
-    int quantidade_memoria_livre = 0;
-    
-    while(i<10){ // 40 pois nosso,nesse exemplo,tem heap tem 10 espaços
-        if(heap[i]==0)
-            quantidade_memoria_livre++; // Se achou espaço livre incrementa 
-        else{ // Se achou algum espaço ALOCADO, então vamos verificar se
-            if(quantidade_memoria_livre>0){ // Se antes tinha algum espaço livre então temos que salvar
-                if(aux==NULL){ // Se é o primeiro nó
-                    aux=new_node(i-quantidade_memoria_livre,quantidade_memoria_livre);
-                    lista_retornada = aux;
-                } 
-                else{
-                    aux->next = new_node(i-quantidade_memoria_livre,quantidade_memoria_livre);
-                    aux=aux->next;
-                }
-            }
-            quantidade_memoria_livre=0;
-        }
-        i++;
-    }
-    // Quando i>10, pode ser que tenha uma área de memória no final do heap e precisamos salvar se tiver.
-    if(quantidade_memoria_livre>0){
-        aux = new_node(i-quantidade_memoria_livre,quantidade_memoria_livre);
-        if(lista_retornada==NULL)
-            lista_retornada=aux;
+
+// Remove um nó da lista
+areas_vazias* pop_front(areas_vazias* head){
+    if(head == NULL)
+        return NULL;
+    areas_vazias* new_head = head->next;
+    free(head);
+    return new_head;
+}
+
+
+areas_vazias* remove_item(areas_vazias* head, int c){
+    if(head == NULL)
+        return NULL;
+
+    if(head->inicial == c)
+        return pop_front(head);
+
+    areas_vazias* p = head;
+    areas_vazias* n = p->next;
+    while(n != NULL && n->inicial != c){
+        p = n;
+        n = n->next;
     }
 
-    return lista_retornada; // Retornamos a lista encadeada
+    if(n != NULL){
+        p->next = n->next;
+        free(n);
+    }
+    return head;
+}
+// -------------------------------
+//  Isso aqui é responsável por tirar áreas vazias da lista
+areas_vazias* update_empty_memory(areas_vazias* head,int indice,int qtd){ 
+     areas_vazias* aux =head;
+    while(aux->inicial!=indice){ 
+        aux=aux->next;
+    }
+    if(aux!=NULL){
+        aux->quantidade = aux->quantidade - qtd;
+        if(aux->quantidade==0){
+           head=remove_item(head,aux->inicial);
+        }else{
+            aux->inicial = aux->inicial+qtd;
+        }
+    }
+    return head;
 }
 
 int main(){
     char* heap = calloc(10 , sizeof(char) ); // Criando um heap
     areas_vazias* head= new_node(0,10); // Inicializando a lista de espaços livres 
     //(no início o heap está todo livre)
-    id A; // Identificador teste
+    id A[10]; // Identificadores
     int opcao=0;
     int qtd;
     char identificador;
-    scanf("%d",&opcao); // First Fit = 1
-
-    // Criando identificador (A,B,C,D,qualquer letra e a quantidade que quer alocar)
-    scanf("%d",&qtd);
-    scanf(" %c",&identificador);
-    A.id=identificador;
-    A.quantidade=qtd;
-
-    // First Fit
-    if(opcao==1){ 
-        areas_vazias* auxiliar = head;
-        while(auxiliar!=NULL){
-            if(auxiliar->quantidade >= qtd){
-                fit(A,auxiliar->inicial,qtd,heap);
-                head = search_empty_memory(heap);
-                break;
+    int i;
+  
+    while(opcao!=-1){
+        puts("1 - First Fit \n2 - Best Fit");
+        scanf("%d",&opcao); 
+        if(opcao==-1)
+            break;
+        puts("Digite a quantidade de memória que quer alocar:");
+        scanf("%d",&qtd);
+        puts("Digite o ID:");
+        scanf(" %c",&identificador);
+        A[i].id=identificador;
+        A[i].quantidade=qtd;
+        switch (opcao)
+        {
+        case 1: // First FIT
+            areas_vazias* auxiliar = head;
+            while(auxiliar!=NULL){
+                if(auxiliar->quantidade >= qtd){
+                    fit(A[i],auxiliar->inicial,qtd,heap);
+                    head = update_empty_memory(head,auxiliar->inicial,qtd);
+                    break;
+                }
+                else
+                    auxiliar=auxiliar->next;
             }
-            else
-                auxiliar=auxiliar->next;
+            if(auxiliar==NULL)
+                puts("A área de memória que deseja alocar é muito grande");
+            i++;
+            break;
+        case 2: // Best FIT
+            areas_vazias* auxiliar1=head;
+            int menor = auxiliar1->quantidade;
+            int indice= auxiliar1->inicial;
+            while(auxiliar1!=NULL){
+                if(auxiliar1->quantidade >= qtd && auxiliar1->quantidade <= menor){
+                    indice=auxiliar1->inicial;
+                    menor=auxiliar1->quantidade;
+                }
+                auxiliar1=auxiliar1->next;
+            }
+            fit(A[i],indice,qtd,heap);
+            head = update_empty_memory(head,indice,qtd);
+            break;
+        case 3: // Remoção
+            puts("Qual iD quer remover?");
+            char aux3;
+            scanf(" %c",&aux3);
+            for(int j=0;j<10/*numeros de IDs do vetor Struct*/;j++){
+                if(A[j].id==aux3){
+                    // Função de remover
+                }
+
+            }
+            break;
+        default:
+            puts("numero errado");
+            break;
         }
-        if(auxiliar==NULL)
-            puts("A área de memória que deseja alocar é muito grande");
-    }
-
-
+}
+   
     // Só para imprimir o heap no final pra ver se funfou
     for(int z = 0;z<10;z++){
         printf("%c ",heap[z]);
     }
     puts("");
+    areas_vazias* aux5 = head;
     while(head!=NULL){ // Imprimir a lista de espaços vazios
         printf("%d %d\n",head->quantidade,head->inicial);
         head=head->next;
     }
 
+
+    free(aux5);
+    free(heap);
     return 0;
 }
