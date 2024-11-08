@@ -1,3 +1,7 @@
+/*  Gabriel Rodrigues Marques Valim && Nuno Martins do Couto && Breno Machado de Oliveira
+    Simulador de Heap - Paradigmas de Programação 
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,22 +17,26 @@ typedef struct id{ // Identificador (ex: A,B,E,D,F,G,Z,Y)
     int inicial; // índice inicial
 }id;
 
-areas_vazias* new_node(int endereco,int quantidade){ // Criação de um nó na lista
+/*-----------------------------------------------------------------------*/
+/* Cria um nó na lista encadeada*/
+areas_vazias* new_node(areas_vazias* head,int endereco,int quantidade){ 
     areas_vazias* node = (areas_vazias*)malloc(sizeof(areas_vazias));
     node->inicial = endereco;
     node->quantidade = quantidade;
-    node->next = NULL;
+    node->next = head;
     return node;
 }
 
+/*-----------------------------------------------------------------------------*/
+/* A função fit aloca no heap*/
 void fit(id identificador,int endereco,int quantidade,char* heap){ // Colocar no heap
     for(int i = endereco;i<endereco+quantidade;i++){
         heap[i]= identificador.id;
     }
 }
 
-
-// Remove um nó da lista
+/*--------------------------------------------------------------------------------*/
+/* As funções pop_front e remove_item removem um nó da lista encadeada*/
 areas_vazias* pop_front(areas_vazias* head){
     if(head == NULL)
         return NULL;
@@ -58,8 +66,10 @@ areas_vazias* remove_item(areas_vazias* head, int c){
     }
     return head;
 }
-// -------------------------------
-//  Isso aqui é responsável por tirar áreas vazias da lista
+/*--------------------------------------------------------------*/
+
+/*  A função update_empty_memory é responsável por atualizar 
+a lista de areas vazias quando adicionamos no Heap*/
 areas_vazias* update_empty_memory(areas_vazias* head,int indice,int qtd){ 
      areas_vazias* aux =head;
     while(aux->inicial!=indice){ 
@@ -75,46 +85,83 @@ areas_vazias* update_empty_memory(areas_vazias* head,int indice,int qtd){
     }
     return head;
 }
+/*-------------------------------------------------------------------*/
+// a função remove_from_heap remove um ID da memória heap
+void remove_from_heap(char* heap,int endereco,int quantidade){
+    for(int i = endereco;i<endereco+quantidade;i++){
+        heap[i]= ' ';
+    }
+}
+/*-------------------------------------------------------------------*/
+// free_list dá free na lista encadeada
+void free_list(areas_vazias* head){
+   if(head){
+       free_list(head->next);
+       free(head);
+   }
+}
 
+/*-------------------------------------------------------------------*/
+/*-------------------------------------------------------------------*/
+
+                                /* Início da main() */
 int main(){
     char* heap = calloc(10 , sizeof(char) ); // Criando um heap
-    areas_vazias* head= new_node(0,10); // Inicializando a lista de espaços livres 
+    areas_vazias* head = NULL;
+    head= new_node(head,0,10); // Inicializando a lista de espaços livres 
     //(no início o heap está todo livre)
     id A[10]; // Identificadores
+    for(int g=0;g<10;g++){
+        A[g].id=' ';
+    }
     int opcao=0;
     int qtd;
     char identificador;
-    int i;
+    int i,j;
   
     while(opcao!=-1){
-        puts("1 - First Fit \n2 - Best Fit");
+        // Menu
+        puts("1 - First Fit \n2 - Best Fit\n3 - delete");
         scanf("%d",&opcao); 
         if(opcao==-1)
             break;
-        puts("Digite a quantidade de memória que quer alocar:");
-        scanf("%d",&qtd);
-        puts("Digite o ID:");
-        scanf(" %c",&identificador);
-        A[i].id=identificador;
-        A[i].quantidade=qtd;
+        if(opcao!=3){
+            puts("Digite a quantidade de memória que quer alocar:");
+            scanf("%d",&qtd);
+            puts("Digite o ID:");
+            scanf(" %c",&identificador);
+        // Procurando espaço vazio no vetor de IDs
+            for(j=0;j<10/*numeros de IDs do vetor Struct*/;j++){
+                if(A[j].id==' '){
+                    A[j].id=identificador;
+                    A[j].quantidade=qtd;
+                    break;
+                            }
+                                }
+        }
+        
+        
         switch (opcao)
         {
-        case 1: // First FIT
+
+        // First FIT
+        case 1: 
             areas_vazias* auxiliar = head;
             while(auxiliar!=NULL){
                 if(auxiliar->quantidade >= qtd){
-                    fit(A[i],auxiliar->inicial,qtd,heap);
+                    A[j].inicial=auxiliar->inicial; // Guardando a posição do heap que o ID está
+                    fit(A[j],auxiliar->inicial,qtd,heap);
                     head = update_empty_memory(head,auxiliar->inicial,qtd);
                     break;
                 }
                 else
                     auxiliar=auxiliar->next;
             }
-            if(auxiliar==NULL)
-                puts("A área de memória que deseja alocar é muito grande");
-            i++;
+            // Fazer um aviso se o usuário quiser alocar um área de memória muito grande
             break;
-        case 2: // Best FIT
+
+        // Best FIT
+        case 2: 
             areas_vazias* auxiliar1=head;
             int menor = auxiliar1->quantidade;
             int indice= auxiliar1->inicial;
@@ -125,20 +172,26 @@ int main(){
                 }
                 auxiliar1=auxiliar1->next;
             }
-            fit(A[i],indice,qtd,heap);
+            A[j].inicial=indice; // Guardando a posição do heap que o ID está
+            fit(A[j],indice,qtd,heap); 
             head = update_empty_memory(head,indice,qtd);
+            // Fazer um aviso se o usuário quiser alocar um área de memória muito grande
             break;
-        case 3: // Remoção
-            puts("Qual iD quer remover?");
-            char aux3;
-            scanf(" %c",&aux3);
-            for(int j=0;j<10/*numeros de IDs do vetor Struct*/;j++){
-                if(A[j].id==aux3){
-                    // Função de remover
-                }
 
+        // Remoção do heap
+        case 3: 
+            puts("Qual ID quer remover?");
+            char aux3; // Temporário apenas para salvar o char do ID do teclado
+            scanf(" %c",&aux3);
+            for(int k=0;k<10/*numeros de IDs do vetor Struct*/;k++){
+                if(A[k].id==aux3){
+                    remove_from_heap(heap,A[k].inicial,A[k].quantidade); // Função de remover do heap
+                    A[k].id=' ';
+                    head= new_node(head,A[k].inicial,A[k].quantidade); // Adicionar um nó na lista
+                }
             }
             break;
+        // Digitou número errado
         default:
             puts("numero errado");
             break;
@@ -151,13 +204,12 @@ int main(){
     }
     puts("");
     areas_vazias* aux5 = head;
-    while(head!=NULL){ // Imprimir a lista de espaços vazios
-        printf("%d %d\n",head->quantidade,head->inicial);
-        head=head->next;
+    while(aux5!=NULL){ // Imprimir a lista de espaços vazios
+        printf("Quantidade disponível[%d] indíce[%d]\n",aux5->quantidade,aux5->inicial);
+        aux5=aux5->next;
     }
 
-
-    free(aux5);
+    free_list(head);
     free(heap);
     return 0;
 }
