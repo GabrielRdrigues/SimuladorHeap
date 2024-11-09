@@ -101,6 +101,69 @@ void free_list(areas_vazias* head){
    }
 }
 
+
+/* -------------------------------------------------------------*/
+
+// Função para ordenar a lista de áreas vazias usando Insertion Sort
+areas_vazias* insertion_sort(areas_vazias* head) {
+    if (head == NULL || head->next == NULL) {
+        return head; // Lista vazia ou com um elemento, já está ordenada
+    }
+
+    areas_vazias* sorted = NULL; // Lista ordenada
+    areas_vazias* current = head; // Nó atual da lista desordenada
+
+    while (current != NULL) {
+        areas_vazias* next = current->next; // Guarda o próximo nó
+        areas_vazias* prev = NULL; // Nó anterior na lista ordenada
+        areas_vazias* ptr = sorted; // Itera sobre a lista ordenada
+
+        while (ptr != NULL && ptr->inicial < current->inicial) {
+            prev = ptr;
+            ptr = ptr->next;
+        }
+
+        // Insere o nó `current` na posição correta na lista ordenada
+        if (prev == NULL) { 
+            current->next = sorted;
+            sorted = current; 
+        } else {
+            current->next = ptr;
+            prev->next = current;
+        }
+
+        current = next; // Avança para o próximo nó na lista desordenada
+    }
+
+    return sorted; // Retorna a lista ordenada
+}
+
+/*-------------------------------------------------------------------------------*/
+
+
+// Função aglutinadora de áreas vazias vzinhas
+
+areas_vazias* aglutinacao(areas_vazias* head) {
+    if (head == NULL || head->next == NULL) {
+        return head;
+    }
+
+    areas_vazias* current = head;
+    while (current->next != NULL) {
+        if (current->inicial + current->quantidade == current->next->inicial) {
+            // Agrupar as áreas
+            current->quantidade += current->next->quantidade;
+            areas_vazias* temp = current->next; // Guarde o próximo nó temporariamente
+            current->next = temp->next; // Pule o nó que será liberado
+            free(temp); // Liberar o nó que foi agrupado
+        } else {
+            current = current->next;
+        }
+    }
+
+    return head;
+}
+
 /*-------------------------------------------------------------------*/
 /*-------------------------------------------------------------------*/
 
@@ -111,17 +174,25 @@ int main(){
     head= new_node(head,0,10); // Inicializando a lista de espaços livres 
     //(no início o heap está todo livre)
     id A[10]; // Identificadores
-    for(int g=0;g<10;g++){
+    for(int g=0;g<10;g++){ // Esse for serve para inicializar o ID com "nada" que no nosso código é um espaço
         A[g].id=' ';
     }
     int opcao=0;
     int qtd;
     char identificador;
     int i,j;
+    int last_indice = 0; // Utilizado para o Next Fit
+    int indice;
+    areas_vazias* auxiliar,*auxiliar1;
   
     while(opcao!=-1){
-        // Menu
-        puts("1 - First Fit \n2 - Best Fit\n3 - delete");
+        /* Impressão do heap*/
+        for(int z = 0;z<10;z++){
+            printf("[%c] ",heap[z]);
+        }
+
+        // Leitura do teclado & Menu
+        puts("\n1 - First Fit \n2 - Best Fit\n3 - delete\n4 - Worst Fit\n5 - Next Fit");
         scanf("%d",&opcao); 
         if(opcao==-1)
             break;
@@ -146,11 +217,12 @@ int main(){
 
         // First FIT
         case 1: 
-            areas_vazias* auxiliar = head;
+            auxiliar = head;
             while(auxiliar!=NULL){
                 if(auxiliar->quantidade >= qtd){
                     A[j].inicial=auxiliar->inicial; // Guardando a posição do heap que o ID está
                     fit(A[j],auxiliar->inicial,qtd,heap);
+                    last_indice = auxiliar->inicial; // Último indíce vai ser o atual
                     head = update_empty_memory(head,auxiliar->inicial,qtd);
                     break;
                 }
@@ -162,7 +234,7 @@ int main(){
 
         // Best FIT
         case 2: 
-            areas_vazias* auxiliar1=head;
+            auxiliar1=head;
             int menor = auxiliar1->quantidade;
             int indice= auxiliar1->inicial;
             while(auxiliar1!=NULL){
@@ -174,11 +246,12 @@ int main(){
             }
             A[j].inicial=indice; // Guardando a posição do heap que o ID está
             fit(A[j],indice,qtd,heap); 
+            last_indice = indice; // Último indíce vai ser o atual
             head = update_empty_memory(head,indice,qtd);
             // Fazer um aviso se o usuário quiser alocar um área de memória muito grande
             break;
 
-        // Remoção do heap
+        // Remoção do HEAP
         case 3: 
             puts("Qual ID quer remover?");
             char aux3; // Temporário apenas para salvar o char do ID do teclado
@@ -190,18 +263,58 @@ int main(){
                     head= new_node(head,A[k].inicial,A[k].quantidade); // Adicionar um nó na lista
                 }
             }
+            head = insertion_sort(head); // Ordena o heap
+            head = aglutinacao(head); /*Isso vai corrigir o erro de ter, por exemplo
+        um nó com índice 0 até 3 e outro nó com indíce 4 até 6, essa função vai juntar isso em um
+        nó só*/
             break;
-        // Digitou número errado
+
+        // Worst FIT
+        case 4:
+            auxiliar1=head;
+            int maior = auxiliar1->quantidade;
+            indice= auxiliar1->inicial;
+            while(auxiliar1!=NULL){
+                if(auxiliar1->quantidade >= qtd && auxiliar1->quantidade >= maior){
+                    indice=auxiliar1->inicial;
+                    maior=auxiliar1->quantidade;
+                }
+                auxiliar1=auxiliar1->next;
+            }
+            A[j].inicial=indice; // Guardando a posição do heap que o ID está
+            fit(A[j],indice,qtd,heap); 
+            last_indice = indice; // Último indíce vai ser o atual
+            head = update_empty_memory(head,indice,qtd);
+            // Fazer um aviso se o usuário quiser alocar um área de memória muito grande
+            break;
+
+        // Next FIT
+        case 5:
+            // auxiliar = head;
+            // while(auxiliar!=NULL && last_indice < auxiliar->inicial){
+            //     auxiliar=auxiliar->next;
+            // }
+            // while(auxiliar!=NULL){
+            // if(auxiliar!=NULL && auxiliar->quantidade >= qtd){
+            //         A[j].inicial=auxiliar->inicial; // Guardando a posição do heap que o ID está
+            //         fit(A[j],auxiliar->inicial,qtd,heap);
+            //         last_indice = auxiliar->inicial; // Último indíce vai ser o atual
+            //         head = update_empty_memory(head,auxiliar->inicial,qtd);
+            //         break;
+            //     }
+            // else
+            //     auxiliar=auxiliar->next;
+            // }
+            break;
         default:
             puts("numero errado");
             break;
+            // Fazer um aviso se o usúario quiser alocar um espaço mt grande
         }
+        
 }
    
-    // Só para imprimir o heap no final pra ver se funfou
-    for(int z = 0;z<10;z++){
-        printf("%c ",heap[z]);
-    }
+   
     puts("");
     areas_vazias* aux5 = head;
     while(aux5!=NULL){ // Imprimir a lista de espaços vazios
