@@ -1,5 +1,9 @@
-Trabalho de PP - Ainda não está finalizado
+Trabalho I de Paradigmas de Programação - 2024.2 - UFF - Ciência da Computação
 
-1 - Colocar alguma coisa pra avisar o usuário quando ele quiser alocar um espaço maior que a disponível na memória
+Breno Machado, Gabriel Rodrigues e Nuno Couto
 
-2- A função Next Fit não está funcionando corretamente
+Título: Simulador do Heap
+
+Funções disponíveis:
+- Inserção (alocação) utilizando Best Fit, Worst Fit, First Fit e Next Fit
+- Remover (desalocar) um espaço de memória
