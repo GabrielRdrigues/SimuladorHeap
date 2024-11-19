@@ -290,21 +290,21 @@ int main(){
 
         // Next FIT
         case 5:
-            // auxiliar = head;
-            // while(auxiliar!=NULL && last_indice < auxiliar->inicial){
-            //     auxiliar=auxiliar->next;
-            // }
-            // while(auxiliar!=NULL){
-            // if(auxiliar!=NULL && auxiliar->quantidade >= qtd){
-            //         A[j].inicial=auxiliar->inicial; // Guardando a posição do heap que o ID está
-            //         fit(A[j],auxiliar->inicial,qtd,heap);
-            //         last_indice = auxiliar->inicial; // Último indíce vai ser o atual
-            //         head = update_empty_memory(head,auxiliar->inicial,qtd);
-            //         break;
-            //     }
-            // else
-            //     auxiliar=auxiliar->next;
-            // }
+            auxiliar = head;
+            while(auxiliar!=NULL && last_indice > auxiliar->inicial){
+                auxiliar=auxiliar->next;
+            }
+            while(auxiliar!=NULL){
+            if(auxiliar->quantidade >= qtd){
+                    A[j].inicial=auxiliar->inicial; // Guardando a posição do heap que o ID está
+                    fit(A[j],auxiliar->inicial,qtd,heap);
+                    last_indice = auxiliar->inicial; // Último indíce vai ser o atual
+                    head = update_empty_memory(head,auxiliar->inicial,qtd);
+                    break;
+                }
+            else
+                auxiliar=auxiliar->next;
+            }
             break;
         default:
             puts("numero errado");
