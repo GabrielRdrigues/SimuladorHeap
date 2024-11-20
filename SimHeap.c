@@ -76,11 +76,11 @@ areas_vazias* update_empty_memory(areas_vazias* head,int indice,int qtd){
         aux=aux->next;
     }
     if(aux!=NULL){
-        aux->quantidade = aux->quantidade - qtd;
+        aux->quantidade = aux->quantidade - qtd; // Quanto espaços temos
         if(aux->quantidade==0){
            head=remove_item(head,aux->inicial);
         }else{
-            aux->inicial = aux->inicial+qtd;
+            aux->inicial = aux->inicial+qtd; // Onde vai iniciar
         }
     }
     return head;
@@ -164,6 +164,17 @@ areas_vazias* aglutinacao(areas_vazias* head) {
     return head;
 }
 
+// Função para ver qual nó da lista tem a maior quantidade disponível
+int maior_qtd_lista(areas_vazias* a){
+    int maior = a->quantidade;
+    while(a!=NULL){
+        if(a->quantidade>maior) 
+            maior = a->quantidade;
+        a=a->next;
+    }
+    return maior;
+}
+
 /*-------------------------------------------------------------------*/
 /*-------------------------------------------------------------------*/
 
@@ -192,23 +203,31 @@ int main(){
         }
 
         // Leitura do teclado & Menu
-        puts("\n1 - First Fit \n2 - Best Fit\n3 - delete\n4 - Worst Fit\n5 - Next Fit");
+        puts("\n1 - First Fit \n2 - Best Fit\n3 - Delete\n4 - Worst Fit\n5 - Next Fit\n-1 - Sair");
         scanf("%d",&opcao); 
         if(opcao==-1)
             break;
         if(opcao!=3){
+
             puts("Digite a quantidade de memória que quer alocar:");
             scanf("%d",&qtd);
-            puts("Digite o ID:");
-            scanf(" %c",&identificador);
-        // Procurando espaço vazio no vetor de IDs
-            for(j=0;j<10/*numeros de IDs do vetor Struct*/;j++){
-                if(A[j].id==' '){
-                    A[j].id=identificador;
-                    A[j].quantidade=qtd;
-                    break;
-                            }
+
+            if(qtd<=maior_qtd_lista(head)){
+                puts("Digite o ID:");
+                scanf(" %c",&identificador);
+            // Procurando espaço vazio no vetor de IDs
+                for(j=0;j<10/*numeros de IDs do vetor Struct*/;j++){
+                    if(A[j].id==' '){
+                        A[j].id=identificador;
+                        A[j].quantidade=qtd;
+                        break;
                                 }
+                                    }
+            }else{
+                puts("Você quer alocar mais que a quantidade disponível!");
+                opcao=20;
+            }
+
         }
         
         
@@ -229,7 +248,6 @@ int main(){
                 else
                     auxiliar=auxiliar->next;
             }
-            // Fazer um aviso se o usuário quiser alocar um área de memória muito grande
             break;
 
         // Best FIT
@@ -248,7 +266,6 @@ int main(){
             fit(A[j],indice,qtd,heap); 
             last_indice = indice; // Último indíce vai ser o atual
             head = update_empty_memory(head,indice,qtd);
-            // Fazer um aviso se o usuário quiser alocar um área de memória muito grande
             break;
 
         // Remoção do HEAP
@@ -285,7 +302,6 @@ int main(){
             fit(A[j],indice,qtd,heap); 
             last_indice = indice; // Último indíce vai ser o atual
             head = update_empty_memory(head,indice,qtd);
-            // Fazer um aviso se o usuário quiser alocar um área de memória muito grande
             break;
 
         // Next FIT
@@ -294,22 +310,24 @@ int main(){
             while(auxiliar!=NULL && last_indice > auxiliar->inicial){
                 auxiliar=auxiliar->next;
             }
+            
             while(auxiliar!=NULL){
-            if(auxiliar->quantidade >= qtd){
-                    A[j].inicial=auxiliar->inicial; // Guardando a posição do heap que o ID está
-                    fit(A[j],auxiliar->inicial,qtd,heap);
-                    last_indice = auxiliar->inicial; // Último indíce vai ser o atual
-                    head = update_empty_memory(head,auxiliar->inicial,qtd);
-                    break;
-                }
-            else
-                auxiliar=auxiliar->next;
+                if(auxiliar->quantidade >= qtd){
+                        A[j].inicial=auxiliar->inicial; // Guardando a posição do heap que o ID está
+                        fit(A[j],auxiliar->inicial,qtd,heap);
+                        last_indice = auxiliar->inicial; // Último indíce vai ser o atual
+                        head = update_empty_memory(head,auxiliar->inicial,qtd);
+                        break;
+                    }
+                else{
+                        // if(auxiliar->inicial>last_indice && auxiliar->next==NULL)
+                        //     auxiliar=head;
+                        auxiliar=auxiliar->next;    
+                    }
             }
             break;
         default:
-            puts("numero errado");
             break;
-            // Fazer um aviso se o usúario quiser alocar um espaço mt grande
         }
         
 }
