@@ -335,7 +335,7 @@ int main(){
                 if (auxiliar == start && start->quantidade < qtd) {
                     printf("Sem espaço pro next fit\n");
                 }
-                break;
+                //break;
             break;
         default:
             break;
