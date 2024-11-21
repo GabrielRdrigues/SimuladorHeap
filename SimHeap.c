@@ -209,6 +209,9 @@ int main(){
             break;
         if(opcao!=3){
 
+            if (head == NULL)
+                printf("\n\nMemória Lotada, remova um espaço antes de alocar!\n\n");
+
             puts("Digite a quantidade de memória que quer alocar:");
             scanf("%d",&qtd);
 
@@ -306,25 +309,33 @@ int main(){
 
         // Next FIT
         case 5:
-            auxiliar = head;
-            while(auxiliar!=NULL && last_indice > auxiliar->inicial){
-                auxiliar=auxiliar->next;
-            }
-            
-            while(auxiliar!=NULL){
-                if(auxiliar->quantidade >= qtd){
-                        A[j].inicial=auxiliar->inicial; // Guardando a posição do heap que o ID está
-                        fit(A[j],auxiliar->inicial,qtd,heap);
-                        last_indice = auxiliar->inicial; // Último indíce vai ser o atual
-                        head = update_empty_memory(head,auxiliar->inicial,qtd);
+                auxiliar = head;
+                while (auxiliar != NULL && auxiliar->inicial < last_indice) {
+                    auxiliar = auxiliar->next;
+                }
+
+                if (auxiliar == NULL)
+                    auxiliar = head;
+
+                areas_vazias* start = auxiliar;
+                do {
+                    if (auxiliar->quantidade >= qtd) {
+                        A[j].inicial = auxiliar->inicial;
+                        fit(A[j], auxiliar->inicial, qtd, heap);
+                        last_indice = auxiliar->inicial;
+                        head = update_empty_memory(head, auxiliar->inicial, qtd);
                         break;
                     }
-                else{
-                        // if(auxiliar->inicial>last_indice && auxiliar->next==NULL)
-                        //     auxiliar=head;
-                        auxiliar=auxiliar->next;    
-                    }
-            }
+                    auxiliar = auxiliar->next;
+                    if (auxiliar == NULL)
+                        auxiliar = head;
+
+                } while (auxiliar != start);
+
+                if (auxiliar == start && start->quantidade < qtd) {
+                    printf("No suitable space found using Next Fit.\n");
+                }
+                break;
             break;
         default:
             break;
