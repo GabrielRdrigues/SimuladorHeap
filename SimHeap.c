@@ -333,7 +333,7 @@ int main(){
                 } while (auxiliar != start);
 
                 if (auxiliar == start && start->quantidade < qtd) {
-                    printf("No suitable space found using Next Fit.\n");
+                    printf("Sem espaço pro next fit\n");
                 }
                 break;
             break;
