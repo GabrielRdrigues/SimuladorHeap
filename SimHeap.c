@@ -177,9 +177,11 @@ int maior_qtd_lista(areas_vazias* a){
 
 /*-------------------------------------------------------------------*/
 /*-------------------------------------------------------------------*/
-
-                                /* Início da main() */
+  
+                             /* Início da main() */
 int main(){
+    
+    /*Declaração de variáveis */
     char* heap = calloc(10 , sizeof(char) ); // Criando um heap
     areas_vazias* head = NULL;
     head= new_node(head,0,10); // Inicializando a lista de espaços livres 
@@ -195,7 +197,8 @@ int main(){
     int last_indice = 0; // Utilizado para o Next Fit
     int indice;
     areas_vazias* auxiliar,*auxiliar1;
-  
+    /*Fim da declaração de variáveis*/
+
     while(opcao!=-1){
         /* Impressão do heap*/
         for(int z = 0;z<10;z++){
