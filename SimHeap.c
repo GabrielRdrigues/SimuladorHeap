@@ -231,7 +231,8 @@ int main(){
                         }
                     }
                 }else{
-                    puts("Você quer alocar mais que a quantidade disponível!");
+                    puts("\nVocê quer alocar mais que a quantidade disponível!");
+                    printf("\n");
                     opcao=20;
                 }
 
