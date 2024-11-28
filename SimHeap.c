@@ -124,9 +124,9 @@ areas_vazias* insertion_sort(areas_vazias* head) {
         }
 
         // Insere o nó `current` na posição correta na lista ordenada
-        if (prev == NULL) { 
+        if (prev == NULL) {
             current->next = sorted;
-            sorted = current; 
+            sorted = current;
         } else {
             current->next = ptr;
             prev->next = current;
@@ -168,7 +168,7 @@ areas_vazias* aglutinacao(areas_vazias* head) {
 int maior_qtd_lista(areas_vazias* a){
     int maior = a->quantidade;
     while(a!=NULL){
-        if(a->quantidade>maior) 
+        if(a->quantidade>maior)
             maior = a->quantidade;
         a=a->next;
     }
@@ -177,14 +177,13 @@ int maior_qtd_lista(areas_vazias* a){
 
 /*-------------------------------------------------------------------*/
 /*-------------------------------------------------------------------*/
-  
+
                              /* Início da main() */
 int main(){
-    
     /*Declaração de variáveis */
     char* heap = calloc(10 , sizeof(char) ); // Criando um heap
     areas_vazias* head = NULL;
-    head= new_node(head,0,10); // Inicializando a lista de espaços livres 
+    head= new_node(head,0,10); // Inicializando a lista de espaços livres
     //(no início o heap está todo livre)
     id A[10]; // Identificadores
     for(int g=0;g<10;g++){ // Esse for serve para inicializar o ID com "nada" que no nosso código é um espaço
@@ -199,49 +198,54 @@ int main(){
     areas_vazias* auxiliar,*auxiliar1;
     /*Fim da declaração de variáveis*/
 
-    while(opcao!=-1){
+    while(opcao!=6){
         /* Impressão do heap*/
         for(int z = 0;z<10;z++){
             printf("[%c] ",heap[z]);
         }
 
         // Leitura do teclado & Menu
-        puts("\n1 - First Fit \n2 - Best Fit\n3 - Delete\n4 - Worst Fit\n5 - Next Fit\n-1 - Sair");
-        scanf("%d",&opcao); 
-        if(opcao==-1)
+        puts("\n1 - First Fit \n2 - Best Fit\n3 - Next Fit\n4 - Worst Fit\n5 - Delete\n6 - Sair");
+        scanf("%d",&opcao);
+        if(opcao==6)
             break;
-        if(opcao!=3){
+        if(opcao!=5){
 
-            if (head == NULL)
+            if (head == NULL){
                 printf("\n\nMemória Lotada, remova um espaço antes de alocar!\n\n");
+                opcao=5;
+            }
+            else{
+                puts("Digite a quantidade de memória que quer alocar:");
+                scanf("%d",&qtd);
 
-            puts("Digite a quantidade de memória que quer alocar:");
-            scanf("%d",&qtd);
+                if(qtd<=maior_qtd_lista(head)){
+                    puts("Digite o ID:");
+                    scanf(" %c",&identificador);
+                    // Procurando espaço vazio no vetor de IDs
+                    for(j=0;j<10/*numeros de IDs do vetor Struct*/;j++){
+                        if(A[j].id==' '){
+                            A[j].id=identificador;
+                            A[j].quantidade=qtd;
+                            break;
+                        }
+                    }
+                }else{
+                    puts("Você quer alocar mais que a quantidade disponível!");
+                    opcao=20;
+                }
 
-            if(qtd<=maior_qtd_lista(head)){
-                puts("Digite o ID:");
-                scanf(" %c",&identificador);
-            // Procurando espaço vazio no vetor de IDs
-                for(j=0;j<10/*numeros de IDs do vetor Struct*/;j++){
-                    if(A[j].id==' '){
-                        A[j].id=identificador;
-                        A[j].quantidade=qtd;
-                        break;
-                                }
-                                    }
-            }else{
-                puts("Você quer alocar mais que a quantidade disponível!");
-                opcao=20;
             }
 
+
         }
-        
-        
+
+
         switch (opcao)
         {
 
         // First FIT
-        case 1: 
+        case 1:
             auxiliar = head;
             while(auxiliar!=NULL){
                 if(auxiliar->quantidade >= qtd){
@@ -257,7 +261,7 @@ int main(){
             break;
 
         // Best FIT
-        case 2: 
+        case 2:
             auxiliar1=head;
             int menor = auxiliar1->quantidade;
             int indice= auxiliar1->inicial;
@@ -269,27 +273,39 @@ int main(){
                 auxiliar1=auxiliar1->next;
             }
             A[j].inicial=indice; // Guardando a posição do heap que o ID está
-            fit(A[j],indice,qtd,heap); 
+            fit(A[j],indice,qtd,heap);
             last_indice = indice; // Último indíce vai ser o atual
             head = update_empty_memory(head,indice,qtd);
             break;
 
-        // Remoção do HEAP
-        case 3: 
-            puts("Qual ID quer remover?");
-            char aux3; // Temporário apenas para salvar o char do ID do teclado
-            scanf(" %c",&aux3);
-            for(int k=0;k<10/*numeros de IDs do vetor Struct*/;k++){
-                if(A[k].id==aux3){
-                    remove_from_heap(heap,A[k].inicial,A[k].quantidade); // Função de remover do heap
-                    A[k].id=' ';
-                    head= new_node(head,A[k].inicial,A[k].quantidade); // Adicionar um nó na lista
-                }
+        // Next Fit
+        case 3:
+            auxiliar = head;
+            while (auxiliar != NULL && auxiliar->inicial < last_indice) {
+                auxiliar = auxiliar->next;
             }
-            head = insertion_sort(head); // Ordena o heap
-            head = aglutinacao(head); /*Isso vai corrigir o erro de ter, por exemplo
-        um nó com índice 0 até 3 e outro nó com indíce 4 até 6, essa função vai juntar isso em um
-        nó só*/
+
+            if (auxiliar == NULL)
+                auxiliar = head;
+
+            areas_vazias* start = auxiliar;
+            do {
+                if (auxiliar->quantidade >= qtd) {
+                    A[j].inicial = auxiliar->inicial;
+                    fit(A[j], auxiliar->inicial, qtd, heap);
+                    last_indice = auxiliar->inicial;
+                    head = update_empty_memory(head, auxiliar->inicial, qtd);
+                    break;
+                }
+                auxiliar = auxiliar->next;
+                if (auxiliar == NULL)
+                    auxiliar = head;
+
+            } while (auxiliar != start);
+
+            if (auxiliar == start && start->quantidade < qtd) {
+                printf("Sem espaço pro next fit\n");
+            }
             break;
 
         // Worst FIT
@@ -305,45 +321,32 @@ int main(){
                 auxiliar1=auxiliar1->next;
             }
             A[j].inicial=indice; // Guardando a posição do heap que o ID está
-            fit(A[j],indice,qtd,heap); 
+            fit(A[j],indice,qtd,heap);
             last_indice = indice; // Último indíce vai ser o atual
             head = update_empty_memory(head,indice,qtd);
             break;
 
-        // Next FIT
+        // Remoção do Heap
         case 5:
-                auxiliar = head;
-                while (auxiliar != NULL && auxiliar->inicial < last_indice) {
-                    auxiliar = auxiliar->next;
+            puts("Qual ID quer remover?");
+            char aux3; // Temporário apenas para salvar o char do ID do teclado
+            scanf(" %c",&aux3);
+            for(int k=0;k<10/*numeros de IDs do vetor Struct*/;k++){
+                if(A[k].id==aux3){
+                    remove_from_heap(heap,A[k].inicial,A[k].quantidade); // Função de remover do heap
+                    A[k].id=' ';
+                    head= new_node(head,A[k].inicial,A[k].quantidade); // Adicionar um nó na lista
                 }
-
-                if (auxiliar == NULL)
-                    auxiliar = head;
-
-                areas_vazias* start = auxiliar;
-                do {
-                    if (auxiliar->quantidade >= qtd) {
-                        A[j].inicial = auxiliar->inicial;
-                        fit(A[j], auxiliar->inicial, qtd, heap);
-                        last_indice = auxiliar->inicial;
-                        head = update_empty_memory(head, auxiliar->inicial, qtd);
-                        break;
-                    }
-                    auxiliar = auxiliar->next;
-                    if (auxiliar == NULL)
-                        auxiliar = head;
-
-                } while (auxiliar != start);
-
-                if (auxiliar == start && start->quantidade < qtd) {
-                    printf("Sem espaço pro next fit\n");
-                }
-                //break;
+            }
+            head = insertion_sort(head); // Ordena o heap
+            head = aglutinacao(head); /*Isso vai corrigir o erro de ter, por exemplo
+        um nó com índice 0 até 3 e outro nó com indíce 4 até 6, essa função vai juntar isso em um
+        nó só*/
             break;
         default:
             break;
         }
-        
+
 }
    
    
